@@ -1,0 +1,8 @@
+attribute1;attribute2;classification
+0,05;0,25;Klasse 1
+0,1;1;Klasse 1
+0,15;1,25;Klasse 1
+0,5;0,5;Klasse 2
+0,7;0,75;Klasse 2
+0,8;0,7;Klasse 3
+0,9;0,6;Klasse 3
