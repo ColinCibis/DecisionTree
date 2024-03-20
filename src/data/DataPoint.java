@@ -30,6 +30,7 @@ public class DataPoint {
 		if (attributeNames.size() != data.size()) {
 			System.out.println("Error in getValueForAttribute()");
 			return null;
+
 		}
 		for (int i = 0; i < this.attributeNames.size(); i++) {
 			if (this.attributeNames.get(i).equals(attrName))

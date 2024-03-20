@@ -18,6 +18,7 @@ public class DataLoader {
 	private List<String> listOfAttrNames; // column names for heading
 	private List<DataPoint> listOfAllPoints; // the data which will be loaded
 
+
 	/**
 	 * Read a csv file with first two rows for structure information
 	 * 
@@ -161,8 +162,15 @@ public class DataLoader {
 			System.out.println("Example Value: " + exampleValue);
 
 			System.out.println("Names of all classes: " + dataLoaded.getAllClasses());
+
+
+			Gini gini = new Gini(dataLoaded);
+			String st = gini.findBestAttributeName();
+			System.out.println("GINI -----------------");
+			System.out.println("XXX"+st);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+
 	}
 }
