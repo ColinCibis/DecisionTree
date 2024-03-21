@@ -34,6 +34,7 @@ public class SplitAttribute implements SplitAttributeMethods {
 
 	@Override
 	public boolean isPureDataset(List<DataPoint> dataPoints) {
+		if(dataPoints.size()==0) return true;
 		String dataClass = dataPoints.get(0).getPredefClass();
 		for (DataPoint dp : dataPoints) {
 			if (!dp.getPredefClass().equals(dataClass)) {

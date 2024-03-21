@@ -1,118 +1,83 @@
 package data;
 
+import pack.SplitAttribute;
+
+import java.security.KeyStore;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class Gini {
-    private List<DataPoint> dataPoints;
 
     private final List<DataPoint> myDataPoints;
 
     private final DataLoader dataLoader;
-    private final Map<String, Map<String, Set<Double>>> classAttributeValuesMap;
-    private final Map<String, Set<Double>> attributeValuesMap;
     private final List<String> attributenames;
 
     public Gini(DataLoader dataLoader) {
         this.myDataPoints = dataLoader.getListOfAllPoints();
         this.dataLoader = dataLoader;
-        this.classAttributeValuesMap = new HashMap<>();
-        this.attributeValuesMap = new HashMap<>();
-        this.attributenames = myDataPoints.getFirst().getAttributeNames();
+        this.attributenames =dataLoader.getListOfAttrNames();
+    }
+    public Double calcGini(SplitAttribute splitAttribute) {
+        List<DataPoint> leftSet = splitAttribute.getLeftDataset(myDataPoints);
+        List<DataPoint> rightSet = splitAttribute.getRightDataset(myDataPoints);
+
+        double n1 = leftSet.size();
+        double n2 = rightSet.size();
+        double n = n1 + n2;
+
+        Map<String,Integer> groupOne = new HashMap<>();
+        Map<String,Integer> groupTwo = new HashMap<>();
+
+        for(String className : dataLoader.getAllClasses()){
+            groupOne.put(className,countClass(className,leftSet));
+            groupTwo.put(className,countClass(className,rightSet));
+        }
+        double g1 = calculateGiniSet(groupOne,n1);
+        double g2 = calculateGiniSet(groupTwo,n2);
+
+        return (n1/n) * g1 + (n2/n )* g2;
     }
 
-    public void generateMap() {
-/*
-        var classNames = dataLoader.getAllClasses();
+    public SplitAttribute findBestAttribute() {
+        double gini = 1.0;
+        SplitAttribute bestSplitAttribute = new SplitAttribute();
 
-        for (String className : classNames) {
-            Map<String, Set<Double>> attributeValuesMap = new HashMap<>();
+        for(String attribute : attributenames){
+            Set<Double> attributeValues = new HashSet<>();
 
-            for (String attribute : attributenames) {
-                Set<Double> doubleSet = new HashSet<>();
-                for (DataPoint dataPoint : myDataPoints) {
-                    if (dataPoint.getPredefClass().equals(className)) {
-                        doubleSet.add(dataPoint.getValueForAttribute(attribute));
+            for(DataPoint dp : myDataPoints){
+                attributeValues.add(dp.getValueForAttribute(attribute));
+            }
+            for(Double value : attributeValues) {
+                SplitAttribute splitAttribute = new SplitAttribute();
+                splitAttribute.setAttrName(attribute);
+                splitAttribute.setValue(value);
 
-                    }
-                    attributeValuesMap.put(attribute, doubleSet);
+                double newGini = calcGini(splitAttribute);
+
+                if(newGini < gini) {
+                    gini = newGini;
+                    bestSplitAttribute = splitAttribute;
                 }
-                classAttributeValuesMap.put(className, attributeValuesMap);
-            }
-        }*/
-    }
-
-    public void findBestAttributeName() {
-/*
-        Map<String, Double> bestAttribute = new HashMap<>();
-        Map<String, Map<String, Set<Double>>> splitDataG1 = new HashMap<>();
-        Map<String, Map<String, Set<Double>>> splitDataG2 = new HashMap<>();
-        Double gini = Double.MAX_VALUE;
-
-        generateMap();
-
-        System.out.println("XXXXX"+classAttributeValuesMap);
-
-        for (String attribute : attributenames) {
-
-            List<String> currentAttribute = new ArrayList<>();
-            currentAttribute.add(attribute);
-
-            List<String> excludedAttributes = new ArrayList<>();
-
-
-            List<Map<String,Map<String,Set<Double>>>> myList;
-
-            for(String className : classAttributeValuesMap.keySet()) {
-
-            }
-            for (String name : attributenames) {
-                    if(!name.equals(currentAttribute.get(0))){
-                        excludedAttributes.add(name);
-                }
-            }
-
-            for(String className : classAttributeValuesMap.keySet()) {
-                splitDataG1 = excludedAttributes.stream()
-                    .filter(classAttributeValuesMap.get(className)::containsKey)
-                    .collect(Collectors.toMap(Function.identity(), classAttributeValuesMap::get));
-            }
-
-
-            calcGini(splitDataG1, splitDataG2);
-            System.out.println("Normal Map:" + splitDataG2 + "Split Map: " + splitDataG1);
-        }*/
-        String bestAttribute;
-        double n1;
-        double n2;
-        double n;
-        double g1;
-        double g2;
-
-
-        for(String attributeName: attributenames){
-            List<DataPoint> greaterThen = new ArrayList<>();
-            List<DataPoint> smallerThen = new ArrayList<>();
-            for (DataPoint dp : myDataPoints){
-                double value = dp.getValueForAttribute(attributeName);
-                for(DataPoint dpI: myDataPoints){
-                    if(dpI.getValueForAttribute(attributeName)<=value) smallerThen.add(dpI);
-                    if(dpI.getValueForAttribute(attributeName)>value) greaterThen.add(dpI);
-                }
-            }
-            n1 = smallerThen.size();
-            n2 = greaterThen.size();
-            n = n1 + n2;
-            for(int i=0;i<smallerThen.size();i++){
-
             }
         }
+        return bestSplitAttribute;
     }
 
-    public double calcGini() {
-        return 0.0;
+    private int countClass(String className, List<DataPoint> subSet){
+        int count = 0;
+        for(DataPoint dataPoint: subSet){
+            if(dataPoint.getPredefClass().equals(className)) count++;
+        }
+        return count;
+    }
+
+    private double calculateGiniSet(Map<String,Integer> classCountSet, double count){
+        double tempOne = 0.0;
+        for(Map.Entry<String,Integer> entry: classCountSet.entrySet() ){
+            tempOne += Math.pow((double)entry.getValue()/count,2);
+        }
+        return 1 - tempOne;
     }
 }
 

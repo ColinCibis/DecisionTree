@@ -1,5 +1,9 @@
 package data;
 
+import pack.Node;
+import pack.Tree;
+import pack.TreePrinter;
+
 import java.io.*;
 import java.nio.file.*;
 import java.text.NumberFormat;
@@ -159,15 +163,22 @@ public class DataLoader {
 			// e.g. for the first line in the data and the first attribute 
 			String nameOfFirstAttribute = dataLoaded.getListOfAttrNames().get(0);
 			double exampleValue = dataLoaded.getListOfAllPoints().get(0).getValueForAttribute(nameOfFirstAttribute);
+
+			Gini gini = new Gini(dataLoaded);
+			System.out.println(gini.findBestAttribute().getAttrName() + "VALUE: " + gini.findBestAttribute().getValue());
+
+
+
 			System.out.println("Example Value: " + exampleValue);
 
 			System.out.println("Names of all classes: " + dataLoaded.getAllClasses());
 
+			Tree tree = new Tree(dataLoaded);
+			TreePrinter treePrinte = new TreePrinter(tree.getRoot());
 
-			Gini gini = new Gini(dataLoaded);
-			String st = gini.findBestAttributeName();
-			System.out.println("GINI -----------------");
-			System.out.println("XXX"+st);
+			treePrinte.print(System.out);
+
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
